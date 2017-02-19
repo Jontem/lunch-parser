@@ -33,7 +33,7 @@
                 (println "not exists")
                 (let [data (slurp *base-url*)]
                     (spit cache-file data)
-                    (html/html-resource cache-file))))))
+                    (load-cached-data cache-file))))))
 
 (defn get-base [html-data]
     (html/select html-data [:div.list :> :.all]))
