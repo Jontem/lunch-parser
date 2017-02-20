@@ -11,5 +11,5 @@
 (require 'core)
 
 (deftask run []
-  (with-pass-thru _
-    (core/-main)))
+  (let [[search-word] *args*]
+    (core/-main search-word)))

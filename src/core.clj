@@ -1,10 +1,10 @@
 (ns core
     (:require [net.cgrand.enlive-html :as html]))
 
-(def ^:dynamic *base-url* "https://www.jkpglunch.se/mandag/")
+(def ^:dynamic *base-url* "https://www.jkpglunch.se/")
 
 (def name-selector [:h3.huvudsida :> :a])
-(def dishes-selector [:ul.lunchul :> :li])
+(def dishes-selector [:ul :li :span.rattdefault])
 (def cache-dir-path "cache")
 (def date-formatter (java.text.SimpleDateFormat. "yyyy-MM-dd") )
 
@@ -36,7 +36,7 @@
                     (load-cached-data cache-file))))))
 
 (defn get-base [html-data]
-    (html/select html-data [:div.list :> :.all]))
+    (html/select html-data [:div.list :.all]))
 
 (defn parse-dishes [html-data]
     (map #(html/text %) (html/select html-data dishes-selector)))
@@ -49,8 +49,14 @@
 (defn get-restaurants [html-data]
     (map #(parse-restaurant %) (get-base html-data)))
 
+(defn has-dish-filter [search-word restaurant]
+    (let [dishes (:dishes restaurant)]
+        (some #(.contains (.toLowerCase %) search-word) dishes)))
+
 (defn -main
   [& args]
   (let [html-data (get-html-data)
-        restaurants (get-restaurants html-data)]
-        (println restaurants)))
+        restaurants (get-restaurants html-data)
+        [search-word] args]
+        (doseq [rest (filter (partial has-dish-filter search-word) restaurants)]
+            (println rest))))
