@@ -59,4 +59,8 @@
         restaurants (get-restaurants html-data)
         [search-word] args]
         (doseq [rest (filter (partial has-dish-filter search-word) restaurants)]
-            (println rest))))
+            (println "--------------------------")
+            (println "")
+            (println (:name rest))
+            (doseq [dish (:dishes rest)]
+                (println (str " - " dish))))))
