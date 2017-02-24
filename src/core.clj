@@ -1,5 +1,10 @@
 (ns core
-    (:require [net.cgrand.enlive-html :as html]))
+    (:require
+        [net.cgrand.enlive-html :as html]
+        [ring.middleware.json :refer [wrap-json-response]]
+        [ring.util.response :refer [response]]
+        [ring.middleware.reload :refer [wrap-reload]]
+        [ring.adapter.jetty :as jetty]))
 
 (def ^:dynamic *base-url* "https://www.jkpglunch.se/")
 
@@ -53,9 +58,39 @@
     (let [dishes (:dishes restaurant)]
         (some #(.contains (.toLowerCase %) search-word) dishes)))
 
+(defn format-dishes [dishes]
+    (reduce (fn [acc dish]
+                (str acc dish "\n"))
+            ""
+            dishes))
+
+(defn format-restaurant [rest]
+    (str (:name rest)
+         "\n"
+         (format-dishes (:dishes rest))
+         "\n\n"))
+
+(defn format-slack-message [restaurants]
+    (reduce (fn [acc rest]
+                (str acc (format-restaurant rest)))
+            ""
+            restaurants))
+
+(defn handler [request]
+    (let [html-data (get-html-data)
+          restaurants (get-restaurants html-data)]
+        (response {:response_type "in_channel"
+                   :text (format-slack-message restaurants )})))
+
+(def app
+  (wrap-json-response handler))
+
+(def reloadable-app
+    (wrap-reload app))
+
 (defn -main
-  [& args]
-  (let [html-data (get-html-data)
+    [& args]
+    (let [html-data (get-html-data)
         restaurants (get-restaurants html-data)
         [search-word] args]
         (doseq [rest (filter (partial has-dish-filter search-word) restaurants)]
@@ -64,3 +99,9 @@
             (println (:name rest))
             (doseq [dish (:dishes rest)]
                 (println (str " - " dish))))))
+
+
+;; repl debugging
+;(defonce server (jetty/run-jetty reloadable-app {:port 3000 :join? false}))
+
+;; use (.start server) or (.stop server)
