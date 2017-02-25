@@ -25,13 +25,16 @@
                 restaurants)))
 
 (defn handler [request]
-    (println )
-    (let [search-word (get (:form-params request) "text")
-          html-data (parser/get-html-data)
-          restaurants (parser/get-restaurants html-data)
-          filtered-restaurants (filter (partial parser/has-dish-filter search-word) restaurants)]
-        (response {:response_type "in_channel"
-                   :text (format-slack-message filtered-restaurants search-word)})))
+    (let [search-word (get (:form-params request) "text")]
+        (if (nil? search-word)
+            (response {:response_type "in_channel"
+                   :text "Please provide a search word"})
+            (let [html-data (parser/get-html-data)
+                    restaurants (parser/get-restaurants html-data)
+                    filtered-restaurants (filter
+                                            (partial parser/has-dish-filter search-word) restaurants)]
+                (response {:response_type "in_channel"
+                    :text (format-slack-message filtered-restaurants search-word)})))))
 
 (def app
     (wrap-params
