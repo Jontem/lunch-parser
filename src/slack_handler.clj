@@ -16,11 +16,13 @@
          (format-dishes (:dishes rest))
          "\n\n"))
 
-(defn format-slack-message [restaurants]
-    (reduce (fn [acc rest]
-                (str acc (format-restaurant rest)))
-            ""
-            restaurants))
+(defn format-slack-message [restaurants search-word]
+    (if (empty? restaurants)
+        (str "Sorry dude! No \"" search-word "\" for you...")
+        (reduce (fn [acc rest]
+                    (str acc (format-restaurant rest)))
+                ""
+                restaurants)))
 
 (defn handler [request]
     (println )
@@ -29,7 +31,7 @@
           restaurants (parser/get-restaurants html-data)
           filtered-restaurants (filter (partial parser/has-dish-filter search-word) restaurants)]
         (response {:response_type "in_channel"
-                   :text (format-slack-message filtered-restaurants)})))
+                   :text (format-slack-message filtered-restaurants search-word)})))
 
 (def app
     (wrap-params
