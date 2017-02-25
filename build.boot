@@ -6,7 +6,8 @@
                   [ring/ring-core "1.5.1"]
                   [ring/ring-jetty-adapter "1.5.1"]
                   [ring/ring-json "0.4.0"]
-                  [ring/ring-devel "1.5.1"]])
+                  [ring/ring-devel "1.5.1"]
+                  [compojure "1.5.2"]])
 
 (task-options!
   pom {}
@@ -14,10 +15,15 @@
 
 
 (require 'core)
+(require
+  '[ring.adapter.jetty :as jetty]
+  '[core]
+  '[server])
+
+
 (deftask run []
   (let [[search-word] *args*]
     (core/-main search-word)))
 
-(require '[ring.adapter.jetty :as jetty])
 (deftask start-server []
-  (jetty/run-jetty core/app {:port 3000}))
+  (jetty/run-jetty server/app {:port 3000}))
