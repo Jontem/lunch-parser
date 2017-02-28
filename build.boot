@@ -1,6 +1,6 @@
 (set-env!
   :project "lunch-parser"
-  :version "0.2.0"
+  :version "0.3.0"
   :resource-paths #{"cache"}
   :source-paths #{"src"}
   :dependencies '[[enlive "1.1.6"]

@@ -15,10 +15,10 @@
     (wrap-reload slack-handler/app))
 
 (defroutes app
-  (GET "/" [] "<h1>Welcome!</h1>")
-  (GET "/api/v1" [] reloadable-query-app)
-  (POST "/slack-api/v1" [] reloadable-slack-app)
-  (route/not-found "<h1>Page not found</h1>"))
+    (GET "/" [] "<h1>Welcome!</h1>")
+    (GET "/api/v1" [] reloadable-query-app)
+    (POST "/slack-api/v1" [] reloadable-slack-app)
+    (route/not-found "<h1>Page not found</h1>"))
 
 ;; repl debugging
 ;;(defonce server (jetty/run-jetty app {:port 3000 :join? false}))
