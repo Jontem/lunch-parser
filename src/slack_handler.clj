@@ -1,5 +1,6 @@
 (ns slack-handler
     (:require
+        [clojure.string :as str]
         [ring.middleware.json :refer [wrap-json-response]]
         [ring.util.response :refer [response]]
         [ring.middleware.params :refer [wrap-params]]))
@@ -24,17 +25,36 @@
                 ""
                 restaurants)))
 
+(defn search-for-dish [search-word]
+    (let [html-data (parser/get-html-data)
+          restaurants (parser/get-restaurants html-data)
+          filtered-restaurants (filter (partial parser/has-dish-filter search-word) restaurants)]
+        (response {:response_type "in_channel"
+                   :text (format-slack-message filtered-restaurants search-word)})))
+
+(defn search-for-restaurant [search-word]
+    (let [html-data (parser/get-html-data)
+          restaurants (parser/get-restaurants html-data)
+          filtered-restaurants (filter (partial parser/matches-restaurant-name search-word) restaurants)]
+        (response {:response_type "in_channel"
+                   :text (format-slack-message filtered-restaurants search-word)})))
+
+(defn parse-query [text]
+    (if (nil? text)
+        []
+        (str/split text #" ")))
+
 (defn handler [request]
-    (let [search-word (get (:form-params request) "text")]
-        (if (nil? search-word)
-            (response {:response_type "in_channel"
-                   :text "Please provide a search word"})
-            (let [html-data (parser/get-html-data)
-                    restaurants (parser/get-restaurants html-data)
-                    filtered-restaurants (filter
-                                            (partial parser/has-dish-filter search-word) restaurants)]
-                (response {:response_type "in_channel"
-                    :text (format-slack-message filtered-restaurants search-word)})))))
+    (let [query (get (:form-params request) "text")
+          command (get (parse-query query) 0)
+          search-word (get (parse-query query) 1)]
+          (println command)
+          (println search-word)
+        (cond
+            (= "dish" command) (search-for-dish search-word)
+            (= "restaurant" command) (search-for-restaurant search-word)
+            :else (response {:response_type "in_channel"
+                             :text "Please provide a command"}))))
 
 (def app
     (wrap-params

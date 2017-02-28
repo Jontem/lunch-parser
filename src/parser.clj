@@ -52,4 +52,8 @@
 
 (defn has-dish-filter [search-word restaurant]
     (let [dishes (:dishes restaurant)]
-        (some #(.contains (.toLowerCase %) search-word) dishes)))
+        (some #(.contains (.toLowerCase %) (.toLowerCase search-word)) dishes)))
+
+(defn matches-restaurant-name [search-word restaurant]
+    (let [rest-name (:name restaurant)]
+        (.contains (.toLowerCase rest-name) (.toLowerCase search-word))))
