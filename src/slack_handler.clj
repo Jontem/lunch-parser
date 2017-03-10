@@ -39,15 +39,21 @@
         (response {:response_type "in_channel"
                    :text (format-slack-message filtered-restaurants search-word)})))
 
-(defn parse-query [text]
+(defn parse-command [text]
     (if (nil? text)
         []
-        (str/split text #" ")))
+        (get (str/split text #" ") 0)))
+
+(defn parse-search-word [text]
+    (if (nil? text)
+        ""
+        (let [[_ & rest] (str/split text #" ")]
+            (str/join " " rest))))
 
 (defn handler [request]
     (let [query (get (:form-params request) "text")
-          command (get (parse-query query) 0)
-          search-word (get (parse-query query) 1)]
+          command (parse-command query)
+          search-word (parse-search-word query)]
           (println command)
           (println search-word)
         (cond
