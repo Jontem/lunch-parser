@@ -9,7 +9,8 @@
                   [ring/ring-jetty-adapter "1.5.1"]
                   [ring/ring-json "0.4.0"]
                   [ring/ring-devel "1.5.1"]
-                  [compojure "1.5.2"]])
+                  [compojure "1.5.2"]
+                  [clj-http "2.3.0"]])
 
 (task-options!
   pom {}

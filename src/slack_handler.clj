@@ -3,7 +3,11 @@
         [clojure.string :as str]
         [ring.middleware.json :refer [wrap-json-response]]
         [ring.util.response :refer [response]]
-        [ring.middleware.params :refer [wrap-params]]))
+        [ring.middleware.params :refer [wrap-params]]
+        [clj-http.client :as client]))
+
+(defn post-back [response-url data]
+    (client/post response-url {:form-params data :content-type :json}))
 
 (defn format-dishes [dishes]
     (reduce (fn [acc dish]
@@ -25,19 +29,20 @@
                 ""
                 restaurants)))
 
-(defn search-for-dish [search-word]
+(defn search-for-dish [search-word response-url]
     (let [html-data (parser/get-html-data)
           restaurants (parser/get-restaurants html-data)
           filtered-restaurants (filter (partial parser/has-dish-filter search-word) restaurants)]
-        (response {:response_type "in_channel"
-                   :text (format-slack-message filtered-restaurants search-word)})))
+        (post-back response-url {:response_type "in_channel"
+                                 :text (format-slack-message filtered-restaurants search-word)})))
 
-(defn search-for-restaurant [search-word]
+
+(defn search-for-restaurant [search-word response-url]
     (let [html-data (parser/get-html-data)
           restaurants (parser/get-restaurants html-data)
           filtered-restaurants (filter (partial parser/matches-restaurant-name search-word) restaurants)]
-        (response {:response_type "in_channel"
-                   :text (format-slack-message filtered-restaurants search-word)})))
+        (post-back response-url {:response_type "in_channel"
+                                 :text (format-slack-message filtered-restaurants search-word)})))
 
 (defn parse-command [text]
     (if (nil? text)
@@ -50,15 +55,23 @@
         (let [[_ & rest] (str/split text #" ")]
             (str/join " " rest))))
 
+(def immediate-response (response {:response_type "in_channel"}))
+
 (defn handler [request]
     (let [query (get (:form-params request) "text")
           command (parse-command query)
-          search-word (parse-search-word query)]
+          search-word (parse-search-word query)
+          response-url (get (:form-params request) "response_url")]
           (println command)
           (println search-word)
+          (println response-url)
         (cond
-            (= "dish" command) (search-for-dish search-word)
-            (= "restaurant" command) (search-for-restaurant search-word)
+            (= "dish" command) (do
+                                (future (search-for-dish search-word response-url))
+                                immediate-response)
+            (= "restaurant" command) (do
+                                        (future (search-for-restaurant search-word response-url))
+                                        immediate-response)
             :else (response {:response_type "in_channel"
                              :text "Please provide a command"}))))
 
