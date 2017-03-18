@@ -57,6 +57,12 @@
 
 (def immediate-response (response {:response_type "in_channel"}))
 
+(defn dish-command? [command]
+    (some #(= command %) ["d" "dish"]))
+
+(defn restaurant-command? [command]
+    (some #(= command %) ["r" "restaurant"]))
+
 (defn handler [request]
     (let [query (get (:form-params request) "text")
           command (parse-command query)
@@ -66,10 +72,10 @@
           (println search-word)
           (println response-url)
         (cond
-            (= "dish" command) (do
+            (dish-command? command) (do
                                 (future (search-for-dish search-word response-url))
                                 immediate-response)
-            (= "restaurant" command) (do
+            (restaurant-command? command) (do
                                         (future (search-for-restaurant search-word response-url))
                                         immediate-response)
             :else (response {:response_type "in_channel"
