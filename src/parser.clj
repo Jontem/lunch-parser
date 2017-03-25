@@ -18,12 +18,19 @@
            name (html/text name-node)]
         {:name name
          :dishes (parse-dishes html-data)
-         :position (get-in geo-map [name :coordinate]) }))
+         :coordinate (get-in geo-map [name :coordinate]) }))
+
+(defn sort-by-distance [restaurants]
+    (sort-by
+        (fn [restaurant] (geo-parser/distance-divid-hq (:coordinate restaurant)))
+        restaurants))
 
 (defn get-restaurants []
-    (map 
-        #((partial parse-restaurant (geo-parser/generate-geo-map)) %)
-        (get-base (cache/get-html-data))))
+    (let [restaurants 
+            (map 
+                #((partial parse-restaurant (geo-parser/generate-geo-map)) %)
+                (get-base (cache/get-html-data)))]
+            (sort-by-distance restaurants)))
 
 (defn has-dish-filter [search-word restaurant]
     (let [dishes (:dishes restaurant)]
