@@ -16,7 +16,7 @@
            name (html/text name-node)]
         {:name name
          :dishes (parse-dishes html-data)
-         :position (get geo-map name) }))
+         :position (get-in geo-map [name :coordinate]) }))
 
 (defn get-restaurants []
     (map 
