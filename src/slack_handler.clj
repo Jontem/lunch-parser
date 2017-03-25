@@ -21,9 +21,9 @@
          (format-dishes (:dishes rest))
          "\n\n"))
 
-(defn format-slack-message [restaurants search-word]
+(defn format-slack-message [restaurants no-match-text]
     (if (empty? restaurants)
-        (str "Sorry dude! No \"" search-word "\" for you...")
+        no-match-text
         (reduce (fn [acc rest]
                     (str acc (format-restaurant rest)))
                 ""
@@ -33,14 +33,24 @@
     (let [restaurants (parser/get-restaurants)
           filtered-restaurants (filter (partial parser/has-dish-filter search-word) restaurants)]
         (post-back response-url {:response_type "in_channel"
-                                 :text (format-slack-message filtered-restaurants search-word)})))
+                                 :text (format-slack-message
+                                            filtered-restaurants
+                                            (str "Sorry dude! No \"" search-word "\" for you..."))})))
 
 
 (defn search-for-restaurant [search-word response-url]
     (let [restaurants (parser/get-restaurants)
           filtered-restaurants (filter (partial parser/matches-restaurant-name search-word) restaurants)]
         (post-back response-url {:response_type "in_channel"
-                                 :text (format-slack-message filtered-restaurants search-word)})))
+                                 :text (format-slack-message
+                                            filtered-restaurants
+                                            (str "Sorry dude! No \"" search-word "\" for you..."))})))
+
+(defn nearest-restaurants [search-word response-url]
+    (let [take-count (Integer. search-word)
+        restaurants (take take-count (parser/get-restaurants))]
+        (post-back response-url {:response_type "in_channel"
+                                 :text (format-slack-message restaurants "No restaurants found")})))
 
 (defn parse-command [text]
     (if (nil? text)
@@ -61,6 +71,9 @@
 (defn restaurant-command? [command]
     (some #(= command %) ["r" "restaurant"]))
 
+(defn nearest-command? [command]
+    (some #(= command %) ["n" "nearest"]))
+
 (defn handler [request]
     (let [query (get (:form-params request) "text")
           command (parse-command query)
@@ -75,6 +88,9 @@
                                 immediate-response)
             (restaurant-command? command) (do
                                         (future (search-for-restaurant search-word response-url))
+                                        immediate-response)
+            (nearest-command? command) (do
+                                        (future (nearest-restaurants search-word response-url))
                                         immediate-response)
             :else (response {:response_type "in_channel"
                              :text "Please provide a command"}))))
