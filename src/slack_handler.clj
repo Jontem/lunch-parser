@@ -15,8 +15,12 @@
             ""
             dishes))
 
+(defn format-distance [rest]
+    (let [distance (geo-parser/distance-divid-hq (:coordinate rest))]
+        (str (format "%.0f" (* distance 1000)) "m")))
+
 (defn format-restaurant [rest]
-    (str (:name rest)
+    (str (:name rest) " - " (format-distance rest)
          "\n"
          (format-dishes (:dishes rest))
          "\n\n"))
