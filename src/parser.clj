@@ -26,10 +26,10 @@
         restaurants))
 
 (defn get-restaurants []
-    (let [restaurants 
-            (map 
-                #((partial parse-restaurant (geo-parser/generate-geo-map)) %)
-                (get-base (cache/get-html-data)))]
+    (let [geo-map (geo-parser/generate-geo-map)
+          restaurants (map 
+                        #((partial parse-restaurant geo-map) %)
+                        (get-base (cache/get-html-data)))]
             (sort-by-distance restaurants)))
 
 (defn has-dish-filter [search-word restaurant]
