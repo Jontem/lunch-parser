@@ -1,4 +1,5 @@
-(ns geo-parser)
+(ns geo-parser
+    (:require [cache]))
 
 (defn parse-position [position]
     {:long (get position 0)

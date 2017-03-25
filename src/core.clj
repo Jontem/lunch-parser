@@ -3,9 +3,8 @@
 
 (defn -main
     [& args]
-    (let [html-data (parser/get-html-data)
-        restaurants (parser/get-restaurants)
-        [search-word] args]
+    (let [restaurants (parser/get-restaurants)
+          [search-word] args]
         (doseq [rest (filter (partial parser/has-dish-filter search-word) restaurants)]
             (println "--------------------------")
             (println "")

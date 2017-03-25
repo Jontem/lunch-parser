@@ -1,6 +1,8 @@
 (ns parser
     (:require
-        [net.cgrand.enlive-html :as html]))
+        [net.cgrand.enlive-html :as html]
+        [geo-parser]
+        [cache]))
 
 (def name-selector [:h3.huvudsida :> :a])
 (def dishes-selector [:ul :li :span.rattdefault])
@@ -21,7 +23,7 @@
 (defn get-restaurants []
     (map 
         #((partial parse-restaurant (geo-parser/generate-geo-map)) %)
-        (get-base (get-html-data))))
+        (get-base (cache/get-html-data))))
 
 (defn has-dish-filter [search-word restaurant]
     (let [dishes (:dishes restaurant)]
