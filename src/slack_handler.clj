@@ -30,16 +30,14 @@
                 restaurants)))
 
 (defn search-for-dish [search-word response-url]
-    (let [html-data (parser/get-html-data)
-          restaurants (parser/get-restaurants html-data)
+    (let [restaurants (parser/get-restaurants)
           filtered-restaurants (filter (partial parser/has-dish-filter search-word) restaurants)]
         (post-back response-url {:response_type "in_channel"
                                  :text (format-slack-message filtered-restaurants search-word)})))
 
 
 (defn search-for-restaurant [search-word response-url]
-    (let [html-data (parser/get-html-data)
-          restaurants (parser/get-restaurants html-data)
+    (let [restaurants (parser/get-restaurants)
           filtered-restaurants (filter (partial parser/matches-restaurant-name search-word) restaurants)]
         (post-back response-url {:response_type "in_channel"
                                  :text (format-slack-message filtered-restaurants search-word)})))

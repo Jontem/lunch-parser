@@ -5,8 +5,7 @@
         [ring.util.response :refer [response]]))
 
 (defn handler [request]
-    (let [html-data (parser/get-html-data)
-          restaurants (parser/get-restaurants html-data)]
+    (let [restaurants (parser/get-restaurants)]
         (response restaurants)))
 
 (def app

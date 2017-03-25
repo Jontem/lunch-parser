@@ -11,13 +11,17 @@
 (defn parse-dishes [html-data]
     (map #(html/text %) (html/select html-data dishes-selector)))
 
-(defn parse-restaurant [html-data]
-    (let [[name-node] (html/select html-data name-selector)]
-        {:name (html/text name-node)
-         :dishes (parse-dishes html-data) }))
+(defn parse-restaurant [geo-map html-data]
+    (let [[name-node] (html/select html-data name-selector)
+           name (html/text name-node)]
+        {:name name
+         :dishes (parse-dishes html-data)
+         :position (get geo-map name) }))
 
-(defn get-restaurants [html-data]
-    (map #(parse-restaurant %) (get-base html-data)))
+(defn get-restaurants []
+    (map 
+        #((partial parse-restaurant (geo-parser/generate-geo-map)) %)
+        (get-base (get-html-data))))
 
 (defn has-dish-filter [search-word restaurant]
     (let [dishes (:dishes restaurant)]
