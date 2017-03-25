@@ -10,7 +10,8 @@
                   [ring/ring-json "0.4.0"]
                   [ring/ring-devel "1.5.1"]
                   [compojure "1.5.2"]
-                  [clj-http "2.3.0"]])
+                  [clj-http "2.3.0"]
+                  [haversine "0.1.1"]])
 
 (task-options!
   pom {}
