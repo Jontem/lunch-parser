@@ -26,8 +26,10 @@
                          :coordinate (parse-position (get item "position"))}) filtered-geo-data))))
 
 (defn calculate-distance [pos1 pos2]
-    (haversine.core/haversine
-        {:latitude (:lat pos1) :longitude (:long pos1)}
-        {:latitude (:lat pos2) :longitude (:long pos2)}))
+    (if (nil? pos2)
+        99999999999
+        (haversine.core/haversine
+            {:latitude (:lat pos1) :longitude (:long pos1)}
+            {:latitude (:lat pos2) :longitude (:long pos2)})))
 
 (def distance-divid-hq (partial calculate-distance { :lat 14.1590071 :long 57.7794258}))
